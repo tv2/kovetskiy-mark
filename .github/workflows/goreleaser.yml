@@ -7,6 +7,8 @@ on:
 
 jobs:
   goreleaser:
+    # we always disable goreleaser in this fork - release to GHCR is done in ci.yml for some reason, Goreleaser just releases to brew
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
