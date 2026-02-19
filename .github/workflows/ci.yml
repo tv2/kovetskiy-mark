@@ -98,13 +98,16 @@ jobs:
         push: false
         tags: ghcr.io/${{ github.repository }}:latest
 
+    # we publish to 'birjj' (Johan)'s GHCR, because TV 2's GHCR doesn't allow public images
+    # we need this image to be public, because it's used in the CI of other repositories
+    # we keep the actual repo within the tv2 org to allow everyone on the team to maintain it
     - name: Log in to GHCR
       uses: docker/login-action@v3
       if: ${{ github.ref_type == 'tag' }}
       with:
         registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        username: birjj
+        password: ${{ secrets.BIRJJ_PACKAGE_PUBLISH_TOKEN }}
 
     - name: Build and push (on tag)
       uses: docker/build-push-action@v6
@@ -113,5 +116,5 @@ jobs:
         push: true
         platforms: linux/amd64,linux/arm64
         tags: |
-           ghcr.io/${{ github.repository }}:${{ github.ref_name }}
-           ghcr.io/${{ github.repository }}:latest
+           ghcr.io/birjj/kovetskiy-mark:${{ github.ref_name }}
+           ghcr.io/birjj/kovetskiy-mark:latest
