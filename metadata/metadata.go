@@ -53,7 +53,7 @@ var (
 	reHeaderPatternMacro = regexp.MustCompile(`<!-- Macro: .*`)
 )
 
-func ExtractMeta(data []byte, spaceFromCli string, titleFromH1 bool, titleFromFilename bool, filename string, parents []string, titleAppendGeneratedHash bool) (*Meta, []byte, error) {
+func ExtractMeta(data []byte, spaceFromCli string, titleFromH1 bool, titleFromFilename bool, filename string, parents []string, titleAppendGeneratedHash bool, defaultContentAppearance string) (*Meta, []byte, error) {
 	var (
 		meta   *Meta
 		offset int
@@ -83,7 +83,6 @@ func ExtractMeta(data []byte, spaceFromCli string, titleFromH1 bool, titleFromFi
 		if meta == nil {
 			meta = &Meta{}
 			meta.Type = "page"                                  // Default if not specified
-			meta.ContentAppearance = FullWidthContentAppearance // Default to full-width for backwards compatibility
 		}
 
 		header := cases.Title(language.English).String(matches[1])
@@ -157,10 +156,6 @@ func ExtractMeta(data []byte, spaceFromCli string, titleFromH1 bool, titleFromFi
 			meta.Type = "page"
 		}
 
-		if meta.ContentAppearance == "" {
-			meta.ContentAppearance = FullWidthContentAppearance // Default to full-width for backwards compatibility
-		}
-
 		if titleFromH1 && meta.Title == "" {
 			meta.Title = ExtractDocumentLeadingH1(data)
 		}
@@ -170,6 +165,17 @@ func ExtractMeta(data []byte, spaceFromCli string, titleFromH1 bool, titleFromFi
 		if spaceFromCli != "" && meta.Space == "" {
 			meta.Space = spaceFromCli
 		}
+	}
+
+	// Use the global content appearance flag if the header is not set in the document
+	if meta != nil && defaultContentAppearance != "" && meta.ContentAppearance == "" {
+		if strings.TrimSpace(defaultContentAppearance) == FixedContentAppearance {
+			meta.ContentAppearance = FixedContentAppearance
+		} else {
+			meta.ContentAppearance = FullWidthContentAppearance
+		}
+	} else if meta != nil && meta.ContentAppearance == "" {
+		meta.ContentAppearance = FullWidthContentAppearance // Default to full-width if nothing else is set for backwards compatibility
 	}
 
 	if meta == nil {
